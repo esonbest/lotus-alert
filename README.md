@@ -2,8 +2,8 @@
 #########################################################################
 # 本脚本用于FileCoin日常巡检，及时告警通知到企业微信。
 # FilGuard致力于提供开箱即用的Fil挖矿技术解决方案
-# 如有问题联系脚本作者「mje」：
-# WeChat：Mjy_Dream
+# 脚本原作者「mje」：# WeChat：Mjy_Dream
+此版本根据自己需要做了较大修改 WeChat: esonbest
 #########################################################################
 import logging
 from logging.handlers import RotatingFileHandler
@@ -15,7 +15,7 @@ from weworkapi.Message import we_work_api
 
 
 # Server酱SendKey
-# 本fork 版本不再使用server 酱，直接使用文企业微信接口，需要sever酱的看原版本
+# 本fork 版本不再使用server 酱，直接使用文企业微信接口.
 # 脚本运行所在的机器类型
 # lotus（一）、Seal-Miner（二）、Wining-Miner（三）、WindowPost-Miner（四）
 # 现做出约定，直接填写一、二、三、四来表示对应的机器类型，可写入多个类型
