@@ -3,7 +3,8 @@
 # 本脚本用于FileCoin日常巡检，及时告警通知到企业微信。
 # FilGuard致力于提供开箱即用的Fil挖矿技术解决方案
 # 如有问题联系脚本作者「mje」：
-# WeChat：Mjy_Dream
+# WeChat：Mjy_Dream 
+# 修改 esonbest
 #########################################################################
 import logging
 from logging.handlers import RotatingFileHandler
