@@ -23,9 +23,9 @@ check_machine = "二"
 # 存储挂载路径「选填，在Seal-Miner、Wining-Miner、WindowPost-Miner上运行时需要填写，多个挂载目录使用'|'进行分隔」
 # nfs 使用show mount 检测
 # WindowPost—Miner日志路径「选填，在WindowPost-Miner上运行时需要填写」
-wdpost_log_path = "/log/minerf01843842.log"
+wdpost_log_path = "/log/minerf01xxx.log"
 # WiningPost-Miner日志路径「选填，在Wining-Miner上运行时需要填写」
-winingpost_log_path = "/log/minerf01843842.log"
+winingpost_log_path = "/log/minerf01xxx.log"
 # 节点号「选填」
 fil_account = "f01843842"
 # 最长时间任务告警，如设置10，那么sealing jobs中最长的时间超过10小时就会告警「选填」
@@ -33,9 +33,9 @@ job_time_alert = 10
 # mpool stuck alert
 max_mpool_nonce = 3
 # wallet_addr 需要检查余额的钱包地址
-wallet_addr = "f3v4ar6bnjtbhbivh5wfspus24etydp36l4yl5ru4nrn6zrcx7vzldajzti223hqnbiygl4kxb2k7vfqldeupa"
-# Default钱包余额告警阈值「选填，默认200」
-default_wallet_balance = 10
+wallet_addr = "f3v4ar6bnjtbhxxxx"
+# Default钱包余额告警阈值「选填，默认100」
+default_wallet_balance = 100
 # 初始爆块数量常量「无需改动」
 block_count = 0
 
@@ -164,17 +164,17 @@ def mpool_check():
     return False
 
 
-# 存储文件挂载检查
+# 存储文件挂载检查根据情况修改自己IP段和IP地址
 def fm_check(check_type=''):
     storage_ip_list = ['204', '206', '207', '221', '222', '223', '224']
     for ip in storage_ip_list:
-        ip = "192.168.85.{0}".format(ip)
+        ip = "192.168.1.{0}".format(ip)
         cmd = "timeout 5s showmount -e {0}".format(ip)
         out = sp.getoutput(cmd)
         app_log.info('存储检查: {0}'.format(ip))
         app_log.info(out)
-        if "01843842" not in out.strip():
-            server_post("f01843842", "{0}存储故障，请及时排查！".format(ip))
+        if "018xx" not in out.strip():
+            server_post("f018xxx", "{0}存储故障，请及时排查！".format(ip))
             return False
     return True
 
