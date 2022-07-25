@@ -42,6 +42,7 @@ block_count = 0
 
 # 日志配置，默认最大文件50M，数量2个，文件名alert.log 初始化的时候可以设置
 # 日志已配置错误处理，无需捕捉具体错误原因，和写入详细错误内容。
+# lotus和lotus-miner 如果不能正常运行，注意检查环境变量，或者在脚本中带环境变量运行
 
 class MyLogger:
     def __init__(self, log_path="alert.log", max_size=50, back_count=2):
@@ -78,7 +79,7 @@ def is_number(s):
     return False
 
 
-def server_post(title='f01843842', content='默认正文'):
+def server_post(title='f01xxx', content='默认正文'):
     try:
         we_work_api.send_wework_message("{}:{}".format(title, content))
     except:
