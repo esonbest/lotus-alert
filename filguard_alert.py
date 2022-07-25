@@ -5,43 +5,43 @@
 # 如有问题联系脚本作者「mje」：
 # WeChat：Mjy_Dream
 #########################################################################
-
 import logging
 from logging.handlers import RotatingFileHandler
 import time
 import json
-import re
-import sys
 import traceback
 import subprocess as sp
-from datetime import datetime
-import requests
+from weworkapi.Message import we_work_api
 
-# Server酱SendKey「必填，填写为自己的SendKey」
-send_key = "SCT42628GBgsr3AraKD0Hua6u9evwVfft"
-# 可配置Server酱推送到企业微信中特定人或多个人「选填，具体可参考文档」
-openid = "yingTaoxiaoWanzi|mje"
+
+# Server酱SendKey
+# 本fork 版本不再使用server 酱，直接使用文企业微信接口，需要sever酱的看原版本
 # 脚本运行所在的机器类型
 # lotus（一）、Seal-Miner（二）、Wining-Miner（三）、WindowPost-Miner（四）
 # 现做出约定，直接填写一、二、三、四来表示对应的机器类型，可写入多个类型
-check_machine = "一二三四"
+check_machine = "二"
 # 存储挂载路径「选填，在Seal-Miner、Wining-Miner、WindowPost-Miner上运行时需要填写，多个挂载目录使用'|'进行分隔」
-file_mount = "/fcfs"
+# nfs 使用show mount 检测
 # WindowPost—Miner日志路径「选填，在WindowPost-Miner上运行时需要填写」
-wdpost_log_path = "/home/filguard/miner.log"
+wdpost_log_path = "/log/minerf01843842.log"
 # WiningPost-Miner日志路径「选填，在Wining-Miner上运行时需要填写」
-winingpost_log_path = "/home/filguard/miner.log"
+winingpost_log_path = "/log/minerf01843842.log"
 # 节点号「选填」
-fil_account = "f099（黑洞）"
+fil_account = "f01843842"
 # 最长时间任务告警，如设置10，那么sealing jobs中最长的时间超过10小时就会告警「选填」
 job_time_alert = 10
-# Default钱包余额告警阈值「选填，默认50」
-default_wallet_balance = 50
+# mpool stuck alert
+max_mpool_nonce = 3
+# wallet_addr 需要检查余额的钱包地址
+wallet_addr = "f3v4ar6bnjtbhbivh5wfspus24etydp36l4yl5ru4nrn6zrcx7vzldajzti223hqnbiygl4kxb2k7vfqldeupa"
+# Default钱包余额告警阈值「选填，默认200」
+default_wallet_balance = 10
 # 初始爆块数量常量「无需改动」
 block_count = 0
-# 修改日志功能，logging 取代原来print. 默认文件alert.log 大小50M，备份2个。
-# 日志已配置具体错误原因，发生时间，和错误类型，无需再捕捉和写入具体错误内容。
 
+
+# 日志配置，默认最大文件50M，数量2个，文件名alert.log 初始化的时候可以设置
+# 日志已配置错误处理，无需捕捉具体错误原因，和写入详细错误内容。
 
 class MyLogger:
     def __init__(self, log_path="alert.log", max_size=50, back_count=2):
@@ -74,31 +74,15 @@ def is_number(s):
         unicodedata.numeric(s)
         return True
     except (TypeError, ValueError):
-        app_log.error("程序isnumber错误")
+        pass
     return False
 
 
-def server_post(title='默认标题', content='默认正文'):
-    global send_key
-    global fil_account
-    global openid
-    api = "https://sctapi.ftqq.com/" + send_key + ".send"
-    data = {
-        "text": (fil_account + ":" + title),
-        "desp": content,
-        "openid": openid
-    }
+def server_post(title='f01843842', content='默认正文'):
     try:
-        req = requests.post(api, data=data)
-        req_json = json.loads(req.text)
-        if req_json.get("data").get("errno") == 0:
-            app_log.info("server message sent successfully: " + title + " | " + content)
-            return True
-        else:
-            app_log.info("server message sent failed: " + req.text)
-            return False
-    except Exception as e:
-        app_log.error("Fail to send message: ")
+        we_work_api.send_wework_message("{}:{}".format(title, content))
+    except:
+        app_log.error("server post 发生错误.")
 
 
 def init_check():
@@ -111,8 +95,7 @@ def init_check():
     except KeyboardInterrupt:
         exit(0)
     except:
-        traceback.print_exc()
-        app_log.error("程序loop发生错误.")
+        traceback.app_log.info_exc()
         time.sleep(10)
 
 
@@ -133,7 +116,7 @@ def chain_check():
 
 # 显卡驱动检查
 def nvidia_check(check_type=''):
-    out = sp.getoutput("timeout 30s echo $(nvidia-smi | grep GeForce)")
+    out = sp.getoutput("timeout 15s echo $(nvidia-smi | grep GeForce)")
     app_log.info('nvidia_check:')
     app_log.info(out)
     if out.find("GeForce") >= 0:
@@ -158,7 +141,7 @@ def miner_process_check(check_type=''):
 # lotus进程检查
 def lotus_process_check():
     out = sp.getoutput("timeout 30s echo $(pidof lotus)")
-    app_log.info('lotus_process_check:')
+    app_log.info('lotusprocess_check:')
     app_log.info(out)
     if out.strip():
         app_log.info("true")
@@ -170,28 +153,28 @@ def lotus_process_check():
 
 # 消息堵塞检查
 def mpool_check():
-    out = sp.getoutput("lotus mpool pending --local | wc -l")
+    out = sp.getoutput("lotus mpool pending --local |grep Nonce | wc -l")
     app_log.info('mpool_check:')
     app_log.info(out)
     if is_number(out):
-        if int(out) <= 240:
+        if int(out) < max_mpool_nonce:
             app_log.info("true")
             return True
-        server_post("Lotus", "消息堵塞，请及时清理！")
+        server_post("Lotus", "f01843842消息堵塞，请及时清理！")
     return False
 
 
 # 存储文件挂载检查
 def fm_check(check_type=''):
-    global file_mount
-    fs = file_mount.split('|')
-    for str in fs:
-        out = sp.getoutput("timeout 30s echo $(df -h | grep " + str + ")")
-        app_log.info('fm_check:')
+    storage_ip_list = ['204', '206', '207', '221', '222', '223', '224']
+    for ip in storage_ip_list:
+        ip = "192.168.85.{0}".format(ip)
+        cmd = "timeout 5s showmount -e {0}".format(ip)
+        out = sp.getoutput(cmd)
+        app_log.info('存储检查: {0}'.format(ip))
         app_log.info(out)
-        if not out.strip():
-            app_log.info("false")
-            server_post(check_type, "未发现存储挂载目录，请及时排查！")
+        if "01843842" not in out.strip():
+            server_post("f01843842", "{0}存储故障，请及时排查！".format(ip))
             return False
     return True
 
@@ -242,7 +225,7 @@ def overtime_check():
 # Default钱包余额预警
 def balance_check():
     global default_wallet_balance
-    out = sp.getoutput("lotus wallet balance")
+    out = sp.getoutput("lotus wallet balance {0}".format(wallet_addr))
     app_log.info('balance_check:')
     app_log.info(out)
     balance = out.split(' ')
@@ -294,6 +277,7 @@ def loop():
             exit(0)
         except:
             traceback.print_exc()
+            app_log.error("loop程序发生错误:")
             time.sleep(120)
 
 
@@ -302,6 +286,6 @@ def main():
 
 
 if __name__ == "__main__":
-    app_log = MyLogger().app_log
     init_check()
+    app_log = MyLogger().app_log
     main()
