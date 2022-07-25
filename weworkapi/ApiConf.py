@@ -15,8 +15,8 @@
 
 ApiConf = {
     # 企业的id，在管理端->"我的企业" 可以看到
-    "CORP_ID": "wwb1ec1ec024ec1502",
+    "CORP_ID": "wwb1ec1ecxxx",
     # 某个自建应用的id及secret, 在管理端 -> 企业应用 -> 自建应用, 点进相应应用可以看到
     "APP_ID": 1000002,
-    "APP_SECRET": "n8CfQoGJIQNxSIjfm3D1YdexYsoYFRU4Xko6VbcSVS8"
+    "APP_SECRET": "nxxxxxxxxx"
 }
