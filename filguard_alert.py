@@ -3,7 +3,7 @@
 # 本脚本用于FileCoin日常巡检，及时告警通知到企业微信。
 # FilGuard致力于提供开箱即用的Fil挖矿技术解决方案
 # 原作者「mje」：# WeChat：Mjy_Dream 
-# 微信接口：
+# 企业微信接口作者：abelzhu, abelzhu@tencent.com 
 # 修改 esonbest
 #########################################################################
 import logging
