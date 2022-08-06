@@ -179,7 +179,7 @@ def wdpost_log_check():
 
 # WiningPost—Miner爆块检查,放在Lotus中检查,这里填上你自己要检测的账号
 def mined_block_check():
-    out = sp.getoutput("lotus chain list --count 100 |grep f018xxx |wc -l")
+    out = sp.getoutput("lotus chain list --count 100 |grep {} |wc -l".format(fil_account))
     app_log.info('mined_block_check,mined block {}:'.format(out))
     if int(out) > 0:
         server_post("f01843842又爆块啦～", "大吉大利，今晚吃鸡")
@@ -230,6 +230,7 @@ def loop():
             if check_machine.find('一') >= 0:
                 if lotus_process_check():
                     if chain_check():
+                        mined_block_check()
                         balance_check()
                         if mpool_check():
                             app_log.info("---------------------")
@@ -241,7 +242,6 @@ def loop():
                     app_log.info(time.asctime(time.localtime(time.time())))
                     app_log.info("Seal-Miner已巡检完毕，无异常")
             if check_machine.find('三') >= 0:
-                mined_block_check()
                 if nvidia_check("WiningMiner") and miner_process_check("WiningMiner") and fm_check("WiningMiner"):
                     app_log.info("---------------------")
                     app_log.info(time.asctime(time.localtime(time.time())))
