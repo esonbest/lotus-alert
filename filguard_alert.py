@@ -2,14 +2,13 @@
 #########################################################################
 # 本脚本用于FileCoin日常巡检，及时告警通知到企业微信。
 # FilGuard致力于提供开箱即用的Fil挖矿技术解决方案
-# 原作者「mje」：# WeChat：Mjy_Dream 
-# 企业微信接口作者：abelzhu, abelzhu@tencent.com 
+# 原作者「mje」：# WeChat：Mjy_Dream
+# 企业微信接口作者：abelzhu, abelzhu@tencent.com
 # 修改 esonbest
 #########################################################################
 import logging
 from logging.handlers import RotatingFileHandler
 import time
-import json
 import traceback
 import subprocess as sp
 from weworkapi.Message import we_work_api
@@ -78,9 +77,9 @@ def is_number(s):
     return False
 
 
-def server_post(title='f01xxx', content='默认正文'):
+def server_post(content='默认正文'):
     try:
-        we_work_api.send_wework_message("{}:{}".format(title, content))
+        we_work_api.send_wework_message(content)
     except:
         app_log.error(str(traceback.format_exc()))
 
@@ -108,7 +107,7 @@ def nvidia_check(check_type=''):
     if out.find("GeForce") >= 0:
         app_log.info("true")
         return True
-    server_post(check_type, "显卡驱动故障，请及时排查！")
+    server_post("显卡驱动故障，请及时排查！")
     return False
 
 
@@ -120,7 +119,7 @@ def miner_process_check(check_type=''):
     if out.strip():
         app_log.info("true")
         return True
-    server_post(check_type, "Miner进程丢失，请及时排查！")
+    server_post("Miner进程丢失，请及时排查！")
     return False
 
 
@@ -132,7 +131,7 @@ def lotus_process_check():
     if out.strip():
         app_log.info("true")
         return True
-    server_post("Lotus", "Lotus进程丢失，请及时排查！")
+    server_post("Lotus进程丢失，请及时排查！")
     app_log.info("false")
     return False
 
@@ -146,7 +145,7 @@ def mpool_check():
         if int(out) < max_mpool_nonce:
             app_log.info("true")
             return True
-        server_post("Lotus", "f01843消息堵塞，请及时清理！")
+        server_post("f01843消息堵塞，请及时清理！")
     return False
 
 
@@ -160,7 +159,7 @@ def fm_check(check_type=''):
         app_log.info('存储检查: {0}'.format(ip))
         app_log.info(out)
         if "018xx" not in out.strip():
-            server_post("f018xxx", "{0}存储故障，请及时排查！".format(ip))
+            server_post("{0}存储故障，请及时排查！".format(ip))
             return False
     return True
 
@@ -173,18 +172,19 @@ def wdpost_log_check():
     if not out.strip():
         app_log.info("true")
         return True
-    server_post("WindowPost", "Wdpost报错，请及时处理！")
+    server_post("Wdpost报错，请及时处理！")
     return False
 
 
-# WiningPost—Miner爆块检查,放在Lotus中检查,这里填上你自己要检测的账号
+# WiningPost—Miner爆块检查,放在Lotus中检查,这里填上你自己要检测的账号,可以填写多个
 def mined_block_check():
-    out = sp.getoutput("lotus chain list --count 100 |grep {} |wc -l".format(fil_account))
-    app_log.info('mined_block_check,mined block {}:'.format(out))
-    if int(out) > 0:
-        server_post("f01843842又爆块啦～", "大吉大利，今晚吃鸡")
-        return True
-    return False
+    account_list = [fil_account]
+    for account in account_list:
+        out = sp.getoutput("lotus chain list --count 100 |grep {} |wc -l".format(account))
+        _message = '大吉大利，{},爆块{}个:'.format(account, out)
+        app_log.info(_message)
+        if int(out) > 0:
+            server_post(_message)
 
 
 # 任务超时检查
@@ -200,7 +200,7 @@ def overtime_check():
         app_log.info(out[0:out.find("h")])
         app_log.info("true")
         return True
-    server_post("SealMiner", "封装任务超时，请及时处理！")
+    server_post("封装任务超时，请及时处理！")
     return False
 
 
@@ -214,7 +214,7 @@ def balance_check():
     if is_number(balance[0]):
         if float(balance[0]) < default_wallet_balance:
             app_log.info("false")
-            server_post("Lotus", "钱包余额不足，请及时充值！")
+            server_post("{}，钱包余额不足，请及时充值！".format(wallet_addr))
             return False
     return True
 
