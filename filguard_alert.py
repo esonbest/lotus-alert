@@ -84,7 +84,7 @@ def server_post(title='f01xxx', content='默认正文'):
     try:
         we_work_api.send_wework_message("{}:{}".format(title, content))
     except:
-        app_log.error("server post 发生错误.")
+        app_log.error(str(traceback.format_exc()))
 
 
 def init_check():
@@ -113,7 +113,7 @@ def chain_check():
         server_post("节点同步出错", "请及时排查！")
         return False
     except Exception as e:
-        app_log.info("Fail to send message: " + e)
+        app_log.error(str(traceback.format_exc()))
 
 
 # 显卡驱动检查
@@ -278,8 +278,7 @@ def loop():
         except KeyboardInterrupt:
             exit(0)
         except:
-            traceback.print_exc()
-            app_log.error("loop程序发生错误:")
+            app_log.error(str(traceback.format_exc()))
             time.sleep(120)
 
 
