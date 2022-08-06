@@ -91,12 +91,16 @@ def chain_check():
         app_log.info('chain_check:')
         app_log.info(out)
         if out.endswith('Done!'):
-            app_log.info("true")
+            app_log.info("chain check ok.")
             return True
-        server_post("节点同步出错", "请及时排查！")
-        return False
+        else:
+            _err_message = "节点同步出错", "请及时排查！"
+            app_log.warn(_err_message)
+            server_post(_err_message)
+            return False
     except Exception as e:
         app_log.error(str(traceback.format_exc()))
+        return False
 
 
 # 显卡驱动检查
@@ -105,10 +109,11 @@ def nvidia_check(check_type=''):
     app_log.info('nvidia_check:')
     app_log.info(out)
     if out.find("GeForce") >= 0:
-        app_log.info("true")
-        return True
-    server_post("显卡驱动故障，请及时排查！")
-    return False
+        app_log.info("GPU check ok.")
+    else:
+        _err_message = "显卡故障，请及时排查！"
+        app_log.warn(_err_message)
+        server_post(_err_message)
 
 
 # miner进程检查
@@ -117,36 +122,38 @@ def miner_process_check(check_type=''):
     app_log.info('miner_process_check:')
     app_log.info(out)
     if out.strip():
-        app_log.info("true")
-        return True
-    server_post("Miner进程丢失，请及时排查！")
-    return False
+        app_log.info("miner process check ok.")
+    else:
+        _err_message = "Miner进程丢失，请及时排查！"
+        app_log.warn(_err_message)
+        server_post(_err_message)
 
 
 # lotus进程检查
 def lotus_process_check():
     out = sp.getoutput("timeout 30s echo $(pidof lotus)")
-    app_log.info('lotusprocess_check:')
+    app_log.info('start lotus process_check:')
     app_log.info(out)
     if out.strip():
-        app_log.info("true")
-        return True
-    server_post("Lotus进程丢失，请及时排查！")
-    app_log.info("false")
-    return False
+        app_log.info("lotus process check ok.")
+    else:
+        _err_message = "Lotus进程丢失，请及时排查！"
+        app_log.warn(_err_message)
+        server_post(_err_message)
 
 
 # 消息堵塞检查
 def mpool_check():
     out = sp.getoutput("lotus mpool pending --local |grep Nonce | wc -l")
-    app_log.info('mpool_check:')
+    app_log.info('start mpool check:')
     app_log.info(out)
     if is_number(out):
         if int(out) < max_mpool_nonce:
             app_log.info("true")
-            return True
-        server_post("f01843消息堵塞，请及时清理！")
-    return False
+        else:
+            _err_message = "{}消息堵塞，请及时清理！".format(fil_account)
+            app_log.warn(_err_message)
+            server_post(_err_message)
 
 
 # 存储文件挂载检查根据情况修改自己IP段和IP地址
@@ -159,9 +166,9 @@ def fm_check(check_type=''):
         app_log.info('存储检查: {0}'.format(ip))
         app_log.info(out)
         if "018xx" not in out.strip():
-            server_post("{0}存储故障，请及时排查！".format(ip))
-            return False
-    return True
+            _err_message = "{0}存储故障，请及时排查！".format(ip)
+            app_log.warn(_err_message)
+            server_post(_err_message)
 
 
 # WindowPost—Miner日志报错检查
@@ -170,10 +177,11 @@ def wdpost_log_check():
     app_log.info('wdpost_log_check:')
     app_log.info(out)
     if not out.strip():
-        app_log.info("true")
-        return True
-    server_post("Wdpost报错，请及时处理！")
-    return False
+        app_log.info("wdpost check ok.")
+    else:
+        _err_message = "Wdpost报错，请及时处理！"
+        app_log.warn(_err_message)
+        server_post(_err_message)
 
 
 # 在lotus中对Miner爆块进行检查,这里填上你自己要检测的账号,可以填写多个
@@ -195,29 +203,29 @@ def overtime_check():
     app_log.info('overtime_check:')
     app_log.info(out)
     if (out.find("Time") >= 0) or (not out.find('h') >= 0):
-        app_log.info("time true")
+        app_log.info("sealing jobs overtime check ok")
         return True
     if out.strip() and int(out[0:out.find('h')]) <= job_time_alert:
         app_log.info(out[0:out.find("h")])
-        app_log.info("true")
-        return True
-    server_post("封装任务超时，请及时处理！")
-    return False
+        app_log.info("sealing jobs overtime check ok.")
+    else:
+        _err_message = "封装任务超时，请及时处理！"
+        app_log.warn(_err_message)
+        server_post(_err_message)
 
 
 # Default钱包余额预警
 def balance_check():
     global default_wallet_balance
     out = sp.getoutput("lotus wallet balance {0}".format(wallet_addr))
-    app_log.info('balance_check:')
+    app_log.info('start balance check:')
     app_log.info(out)
     balance = out.split(' ')
     if is_number(balance[0]):
         if float(balance[0]) < default_wallet_balance:
-            app_log.info("false")
-            server_post("{}，钱包余额不足，请及时充值！".format(wallet_addr))
-            return False
-    return True
+            _err_message = "{}，钱包余额不足，请及时充值！".format(wallet_addr)
+            app_log.warn(_err_message)
+            server_post(_err_message)
 
 
 def loop():
@@ -229,31 +237,26 @@ def loop():
                 app_log.info("请填写巡检的机器类型！")
                 break
             if check_machine.find('一') >= 0:
-                if lotus_process_check():
-                    if chain_check():
-                        mined_block_check()
-                        balance_check()
-                        if mpool_check():
-                            app_log.info("---------------------")
-                            app_log.info(time.asctime(time.localtime(time.time())))
-                            app_log.info("Lotus已巡检完毕，无异常")
+                lotus_process_check()
+                if chain_check():
+                    mined_block_check()
+                    balance_check()
+                    mpool_check()
             if check_machine.find('二') >= 0:
-                if miner_process_check("SealMiner") and fm_check("SealMiner") and overtime_check():
-                    app_log.info("---------------------")
-                    app_log.info(time.asctime(time.localtime(time.time())))
-                    app_log.info("Seal-Miner已巡检完毕，无异常")
+                miner_process_check("SealMiner")
+                fm_check("SealMiner")
+                overtime_check()
             if check_machine.find('三') >= 0:
-                if nvidia_check("WiningMiner") and miner_process_check("WiningMiner") and fm_check("WiningMiner"):
-                    app_log.info("---------------------")
-                    app_log.info(time.asctime(time.localtime(time.time())))
-                    app_log.info("WiningPost-Miner已巡检完毕，无异常")
+                nvidia_check("WiningMiner")
+                miner_process_check("WiningMiner")
+                fm_check("WiningMiner")
             if check_machine.find('四') >= 0:
-                if nvidia_check("WindowPostMiner") and miner_process_check("WindowPostMiner") and fm_check(
-                        "WindowPostMiner") and wdpost_log_check():
-                    app_log.info("---------------------")
-                    app_log.info(time.asctime(time.localtime(time.time())))
-                    app_log.info("WindowPost-Miner已巡检完毕，无异常")
-                    # sleep
+                nvidia_check("WindowPostMiner")
+                miner_process_check("WindowPostMiner")
+                fm_check("WindowPostMiner")
+                wdpost_log_check()
+
+            # sleep
             app_log.info("sleep 300 seconds\n")
             time.sleep(300)
         except KeyboardInterrupt:
