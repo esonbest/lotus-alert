@@ -37,8 +37,6 @@ max_mpool_nonce = 3
 wallet_addr = "f3v4ar6bnjtbhxxxx"
 # Default钱包余额告警阈值「选填，默认100」
 default_wallet_balance = 100
-# 初始爆块数量常量「无需改动」
-block_count = 0
 
 
 # 日志配置，默认最大文件50M，数量2个，文件名alert.log 初始化的时候可以设置
@@ -85,20 +83,6 @@ def server_post(title='f01xxx', content='默认正文'):
         we_work_api.send_wework_message("{}:{}".format(title, content))
     except:
         app_log.error(str(traceback.format_exc()))
-
-
-def init_check():
-    try:
-        # 初始化目前日志中的爆块数量
-        if check_machine.find('三') >= 0:
-            global block_count
-            out = sp.getoutput("cat " + winingpost_log_path + " | grep 'mined new block' | wc -l")
-            block_count = int(out)
-    except KeyboardInterrupt:
-        exit(0)
-    except:
-        traceback.app_log.info_exc()
-        time.sleep(10)
 
 
 # 高度同步检查
@@ -283,6 +267,5 @@ def main():
 
 
 if __name__ == "__main__":
-    init_check()
     app_log = MyLogger().app_log
     main()
