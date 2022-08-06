@@ -162,7 +162,7 @@ def mpool_check():
         if int(out) < max_mpool_nonce:
             app_log.info("true")
             return True
-        server_post("Lotus", "f01843842消息堵塞，请及时清理！")
+        server_post("Lotus", "f01843消息堵塞，请及时清理！")
     return False
 
 
