@@ -176,14 +176,15 @@ def wdpost_log_check():
     return False
 
 
-# WiningPost—Miner爆块检查,放在Lotus中检查,这里填上你自己要检测的账号,可以填写多个
+# 在lotus中对Miner爆块进行检查,这里填上你自己要检测的账号,可以填写多个
 def mined_block_check():
     account_list = [fil_account]
+    chain_txt = sp.getoutput("lotus chain list --count 100")
     for account in account_list:
-        out = sp.getoutput("lotus chain list --count 100 |grep {} |wc -l".format(account))
-        _message = '大吉大利，{},爆块{}个:'.format(account, out)
+        block_count = chain_txt.count(account)
+        _message = '大吉大利，{},爆块{}个:'.format(account, block_count)
         app_log.info(_message)
-        if int(out) > 0:
+        if int(block_count) > 0:
             server_post(_message)
 
 
