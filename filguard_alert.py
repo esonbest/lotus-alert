@@ -28,7 +28,7 @@ wdpost_log_path = "/log/minerf01xxx.log"
 # WiningPost-Miner日志路径「选填，在Wining-Miner上运行时需要填写」
 winingpost_log_path = "/log/minerf01xxx.log"
 # 节点号「选填」
-fil_account = "f01843842"
+fil_account = "f01843"
 # 最长时间任务告警，如设置10，那么sealing jobs中最长的时间超过10小时就会告警「选填」
 job_time_alert = 10
 # mpool stuck alert
