@@ -189,7 +189,7 @@ def wdpost_log_check():
 # 在lotus中对Miner爆块进行检查,这里填上你自己要检测的账号,可以填写多个
 def mined_block_check():
     account_list = [fil_account]
-    chain_txt = sp.getoutput("lotus chain list --count 100")
+    chain_txt = sp.getoutput("lotus chain list --count {0}".format(int(check_interval/30)))
     for account in account_list:
         block_count = chain_txt.count(account)
         _message = '大吉大利，{},爆块{}个:'.format(account, block_count)
