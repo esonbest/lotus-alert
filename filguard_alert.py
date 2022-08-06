@@ -36,6 +36,8 @@ max_mpool_nonce = 3
 wallet_addr = "f3v4ar6bnjtbhxxxx"
 # Default钱包余额告警阈值「选填，默认100」
 default_wallet_balance = 100
+# 巡检周期300秒，不建议设置太小。
+check_interval = 300
 
 
 # 日志配置，默认最大文件50M，数量2个，文件名alert.log 初始化的时候可以设置
@@ -255,15 +257,14 @@ def loop():
                 miner_process_check("WindowPostMiner")
                 fm_check("WindowPostMiner")
                 wdpost_log_check()
-
             # sleep
             app_log.info("sleep 300 seconds\n")
-            time.sleep(300)
+            time.sleep(check_interval)
         except KeyboardInterrupt:
             exit(0)
         except:
             app_log.error(str(traceback.format_exc()))
-            time.sleep(120)
+            time.sleep(check_interval)
 
 
 def main():
